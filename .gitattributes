@@ -1,0 +1,6 @@
+# Los saltos de línea CRLF (comunes en checkouts de Windows) rompen estos
+# archivos dentro del contenedor Linux ("bad interpreter" en el shell script,
+# parseo inválido en el Dockerfile). Se fuerza LF sin importar el sistema
+# operativo del que se clone el repo.
+*.sh text eol=lf
+Dockerfile text eol=lf
