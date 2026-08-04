@@ -27,6 +27,25 @@ RUN npx prisma generate
 # lib/queues/*.ts: todos están diseñados para no conectar de verdad en build.
 ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
 ENV REDIS_URL="redis://localhost:6379"
+
+# Las variables NEXT_PUBLIC_* se incrustan en el JS del cliente durante
+# `next build` — a diferencia de las demás, NO se pueden inyectar en
+# runtime; si no están presentes aquí, quedan compiladas como undefined de
+# forma permanente (rompe el login de Clerk). Railway pasa automáticamente
+# las variables del servicio como build args cuando el Dockerfile declara
+# un ARG con el mismo nombre, así que estos valores deben coincidir con las
+# variables ya configuradas en el servicio.
+ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+ARG NEXT_PUBLIC_CLERK_SIGN_IN_URL
+ARG NEXT_PUBLIC_CLERK_SIGN_UP_URL
+ARG NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL
+ARG NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL
+ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+ENV NEXT_PUBLIC_CLERK_SIGN_IN_URL=$NEXT_PUBLIC_CLERK_SIGN_IN_URL
+ENV NEXT_PUBLIC_CLERK_SIGN_UP_URL=$NEXT_PUBLIC_CLERK_SIGN_UP_URL
+ENV NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=$NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL
+ENV NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=$NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL
+
 RUN npm run build
 RUN npm prune --omit=dev
 
