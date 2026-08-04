@@ -97,10 +97,10 @@ export async function POST(req: Request) {
     await writeFile(filePath, buffer);
   } catch (err) {
     console.error("No se pudo guardar el archivo subido:", err);
-    await prisma.meeting.update({
-      where: { id: meeting.id },
-      data: { status: MeetingStatus.FAILED },
-    });
+    // No queda nada útil que conservar (ni transcripción ni archivo real),
+    // así que se borra la reunión en vez de dejarla marcada "Fallida"
+    // colgando en la lista.
+    await prisma.meeting.delete({ where: { id: meeting.id } });
     return NextResponse.json(
       { error: "No se pudo guardar el archivo subido" },
       { status: 500 },
