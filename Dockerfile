@@ -51,8 +51,6 @@ RUN npm prune --omit=dev
 
 FROM base AS runner
 ENV NODE_ENV=production
-RUN addgroup --system --gid 1001 nodejs \
-  && adduser --system --uid 1001 --ingroup nodejs app
 
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
@@ -67,11 +65,14 @@ COPY --from=builder /app/workers ./workers
 COPY --from=builder /app/lib ./lib
 COPY docker-entrypoint.sh ./docker-entrypoint.sh
 
-RUN mkdir -p /app/uploads \
-  && chown -R app:nodejs /app/uploads \
-  && chmod +x ./docker-entrypoint.sh
+# Corre como root a propósito: un Railway Volume montado en /app/uploads
+# puede quedar con dueño root al montarse, y con un usuario sin privilegios
+# eso rompe la escritura de archivos subidos con EACCES. Es un contenedor
+# de un solo servicio privado (no multiusuario), así que el riesgo de
+# correr como root es bajo frente a la complejidad de arreglar permisos de
+# volumen con un usuario no-root.
+RUN mkdir -p /app/uploads && chmod +x ./docker-entrypoint.sh
 
-USER app
 EXPOSE 3000
 
 CMD ["/bin/bash", "docker-entrypoint.sh"]
