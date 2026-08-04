@@ -1,0 +1,133 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  clerkOrgId String  @unique
+  createdAt DateTime @default(now())
+
+  users     User[]
+  meetings  Meeting[]
+}
+
+model User {
+  id           String   @id @default(uuid())
+  clerkUserId  String   @unique
+  email        String   @unique
+  name         String?
+  organizationId String
+  organization Organization @relation(fields: [organizationId], references: [id])
+  createdAt    DateTime @default(now())
+
+  meetings     Meeting[] @relation("MeetingCreator")
+  notifications Notification[]
+}
+
+model Meeting {
+  id             String   @id @default(uuid())
+  title          String
+  meetingUrl     String?  // Solo aplica a source = RECALL_BOT
+  scheduledAt    DateTime
+  status         MeetingStatus @default(SCHEDULED)
+  source         MeetingSource @default(RECALL_BOT)
+  recallBotId    String?  @unique // ID del bot en Recall.ai (solo source = RECALL_BOT)
+  recordingUrl   String?  // URL de descarga (Recall.ai) o ruta local (archivo subido)
+  durationSeconds Int?
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  createdById    String
+  createdBy      User @relation("MeetingCreator", fields: [createdById], references: [id])
+
+  transcript     Transcript?
+  summary        Summary?
+  notifications  Notification[]
+
+  createdAt      DateTime @default(now())
+}
+
+enum MeetingStatus {
+  SCHEDULED
+  JOINING
+  RECORDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum MeetingSource {
+  RECALL_BOT
+  UPLOAD
+}
+
+model Transcript {
+  id         String   @id @default(uuid())
+  meetingId  String   @unique
+  meeting    Meeting  @relation(fields: [meetingId], references: [id])
+
+  rawText    String   @db.Text
+  segments   Json     // [{ speaker, text, startTime, endTime }]
+
+  createdAt  DateTime @default(now())
+}
+
+model Summary {
+  id            String   @id @default(uuid())
+  meetingId     String   @unique
+  meeting       Meeting  @relation(fields: [meetingId], references: [id])
+
+  executiveSummary String @db.Text
+  keyDecisions     Json   // string[]
+
+  tasks         Task[]
+
+  createdAt     DateTime @default(now())
+}
+
+model Task {
+  id          String   @id @default(uuid())
+  summaryId   String
+  summary     Summary  @relation(fields: [summaryId], references: [id])
+
+  description String
+  assignee    String?
+  dueDate     DateTime?
+  completed   Boolean  @default(false)
+
+  createdAt   DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  type      NotificationType
+
+  title     String
+  message   String
+
+  userId    String   // destinatario
+  user      User     @relation(fields: [userId], references: [id])
+
+  meetingId String?
+  meeting   Meeting? @relation(fields: [meetingId], references: [id])
+
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+}
+
+enum NotificationType {
+  TRANSCRIPT_READY
+  SUMMARY_READY
+  MEETING_FAILED
+  MEMBER_JOINED
+  TASK_ASSIGNED
+}
