@@ -136,6 +136,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: "Outfit", sans-serif;
+    letter-spacing: -0.02em;
     background-image:
       linear-gradient(var(--bg-scrim), var(--bg-scrim)), url("/fondo.png");
     background-repeat: no-repeat;
