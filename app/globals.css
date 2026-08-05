@@ -172,9 +172,18 @@
 /* Clerk inyecta su propio stylesheet después del nuestro, así que sus reglas
    ganan el cascade aunque le pasemos className vía `appearance.elements`
    (misma especificidad, orden de fuente posterior). Se fuerza con
-   !important solo donde es necesario: centrar el logo horizontalmente. */
+   !important solo donde es necesario: centrar y agrandar el logo. */
 .cl-header {
   align-items: center !important;
+}
+
+.cl-logoBox {
+  height: 5rem !important;
+}
+
+.cl-logoImage {
+  width: 5rem !important;
+  height: 5rem !important;
 }
 
 @utility brand-gradient-text {
