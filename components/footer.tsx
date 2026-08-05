@@ -11,7 +11,7 @@ export function Footer() {
           alt="NexGovIA"
           width={824}
           height={221}
-          className="h-8 w-auto"
+          className="h-14 w-auto"
         />
         <p className="text-xs text-muted-foreground">
           &copy; {CURRENT_YEAR} <span className="font-semibold">NexGovIA S.A.S.®</span> ·

@@ -2,6 +2,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { SidebarNav } from "@/components/dashboard/sidebar-nav";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { PageTransition } from "@/components/page-transition";
+import { Footer } from "@/components/footer";
 
 export default function DashboardLayout({
   children,
@@ -16,6 +17,7 @@ export default function DashboardLayout({
         <div className="flex flex-1 flex-col gap-4 p-4">
           <PageTransition>{children}</PageTransition>
         </div>
+        <Footer />
       </SidebarInset>
     </SidebarProvider>
   );
