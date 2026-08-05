@@ -68,7 +68,7 @@ export default async function MeetingsPage({
             Historial de reuniones documentadas por tu organización.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div data-tour="meetings-actions" className="flex items-center gap-2">
           <Button
             variant="outline"
             nativeButton={false}
@@ -84,6 +84,7 @@ export default async function MeetingsPage({
 
       <form
         method="GET"
+        data-tour="meetings-filters"
         className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:flex-row sm:items-end"
       >
         <div className="flex flex-1 flex-col gap-1.5">
@@ -121,34 +122,36 @@ export default async function MeetingsPage({
         </div>
       </form>
 
-      {meetings.length === 0 ? (
-        <EmptyState
-          icon={Video}
-          message={
-            hasFilters
-              ? "No se encontraron reuniones con esos filtros."
-              : "Aún no hay reuniones todavía."
-          }
-        />
-      ) : (
-        <div className="flex flex-col gap-2">
-          {meetings.map((meeting) => (
-            <Link
-              key={meeting.id}
-              href={`/dashboard/meetings/${meeting.id}`}
-              className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-accent sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div className="flex flex-col gap-1">
-                <span className="font-medium">{meeting.title}</span>
-                <span className="text-sm text-muted-foreground">
-                  {dateFormatter.format(meeting.scheduledAt)}
-                </span>
-              </div>
-              <MeetingStatusBadge status={meeting.status} />
-            </Link>
-          ))}
-        </div>
-      )}
+      <div data-tour="meetings-list">
+        {meetings.length === 0 ? (
+          <EmptyState
+            icon={Video}
+            message={
+              hasFilters
+                ? "No se encontraron reuniones con esos filtros."
+                : "Aún no hay reuniones todavía."
+            }
+          />
+        ) : (
+          <div className="flex flex-col gap-2">
+            {meetings.map((meeting) => (
+              <Link
+                key={meeting.id}
+                href={`/dashboard/meetings/${meeting.id}`}
+                className="flex flex-col gap-2 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-accent sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="flex flex-col gap-1">
+                  <span className="font-medium">{meeting.title}</span>
+                  <span className="text-sm text-muted-foreground">
+                    {dateFormatter.format(meeting.scheduledAt)}
+                  </span>
+                </div>
+                <MeetingStatusBadge status={meeting.status} />
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
 
       {hasFilters ? (
         <p className="text-xs text-muted-foreground">

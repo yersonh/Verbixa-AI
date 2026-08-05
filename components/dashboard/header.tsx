@@ -9,6 +9,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { NotificationsMenu } from "@/components/dashboard/notifications-menu";
+import { HelpTourButton } from "@/components/dashboard/help-tour-button";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -89,7 +90,10 @@ export function DashboardHeader() {
       </Breadcrumb>
 
       <div className="ml-auto flex items-center gap-2">
-        <NotificationsMenu />
+        <HelpTourButton />
+        <div data-tour="notifications">
+          <NotificationsMenu />
+        </div>
         <Separator orientation="vertical" className="h-4" />
         <Avatar size="sm">
           <AvatarImage src={user?.imageUrl} alt={displayName} />

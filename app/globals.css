@@ -199,6 +199,53 @@
   background-color: color-mix(in srgb, var(--background) 70%, transparent) !important;
 }
 
+/* Tema oscuro para el popover del tour de ayuda (driver.js), para que
+   combine con el resto de la UI en vez del blanco por defecto. driver.css
+   se importa en un componente cliente y puede cargar en cualquier orden
+   relativo a este archivo, así que se fuerza con !important. */
+.driver-popover {
+  background-color: var(--popover) !important;
+  color: var(--popover-foreground) !important;
+  border: 1px solid var(--border) !important;
+}
+.driver-popover-title {
+  color: var(--popover-foreground) !important;
+}
+.driver-popover-description {
+  color: var(--muted-foreground) !important;
+}
+.driver-popover-progress-text {
+  color: var(--muted-foreground) !important;
+}
+.driver-popover-close-btn {
+  color: var(--muted-foreground) !important;
+}
+.driver-popover-close-btn:hover,
+.driver-popover-close-btn:focus {
+  color: var(--popover-foreground) !important;
+}
+.driver-popover-footer-btn {
+  background-color: var(--secondary) !important;
+  color: var(--secondary-foreground) !important;
+  border: 1px solid var(--border) !important;
+}
+.driver-popover-footer-btn:hover,
+.driver-popover-footer-btn:focus {
+  background-color: var(--muted) !important;
+}
+.driver-popover-arrow-side-left {
+  border-left-color: var(--popover) !important;
+}
+.driver-popover-arrow-side-right {
+  border-right-color: var(--popover) !important;
+}
+.driver-popover-arrow-side-top {
+  border-top-color: var(--popover) !important;
+}
+.driver-popover-arrow-side-bottom {
+  border-bottom-color: var(--popover) !important;
+}
+
 @utility brand-gradient-text {
   background-image: linear-gradient(135deg, var(--brand-from), var(--brand-to));
   background-clip: text;

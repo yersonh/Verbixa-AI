@@ -87,7 +87,7 @@ export default async function MeetingPage({
         {summary && <ExportPdfButton meetingId={meeting.id} />}
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-4">
+      <div data-tour="meeting-info" className="rounded-xl border border-border bg-card p-4">
         <dl className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <dt className="text-sm text-muted-foreground">Estado</dt>
@@ -137,7 +137,7 @@ export default async function MeetingPage({
         </dl>
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div data-tour="meeting-transcript" className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold tracking-tight">
           Transcripción
         </h2>
@@ -159,7 +159,7 @@ export default async function MeetingPage({
         )}
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div data-tour="meeting-summary" className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold tracking-tight">Acta</h2>
 
         {summary ? (

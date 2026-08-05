@@ -59,7 +59,10 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div
+        data-tour="dashboard-stats"
+        className="grid grid-cols-1 gap-4 md:grid-cols-3"
+      >
         {stats.map((stat) => (
           <div
             key={stat.label}
@@ -78,7 +81,7 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      <div className="flex flex-col gap-3">
+      <div data-tour="dashboard-recent" className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold tracking-tight">
             Reuniones recientes

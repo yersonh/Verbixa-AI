@@ -48,11 +48,21 @@ function initials(name: string) {
 }
 
 const navItems = [
-  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { title: "Reuniones", href: "/dashboard/meetings", icon: Video },
-  { title: "Transcripciones", href: "/dashboard/transcripts", icon: FileText },
-  { title: "Tareas", href: "/dashboard/tasks", icon: ListChecks },
-  { title: "Configuración", href: "/dashboard/settings", icon: Settings },
+  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, tour: "nav-dashboard" },
+  { title: "Reuniones", href: "/dashboard/meetings", icon: Video, tour: "nav-meetings" },
+  {
+    title: "Transcripciones",
+    href: "/dashboard/transcripts",
+    icon: FileText,
+    tour: "nav-transcripts",
+  },
+  { title: "Tareas", href: "/dashboard/tasks", icon: ListChecks, tour: "nav-tasks" },
+  {
+    title: "Configuración",
+    href: "/dashboard/settings",
+    icon: Settings,
+    tour: "nav-settings",
+  },
 ];
 
 export function SidebarNav() {
@@ -70,7 +80,11 @@ export function SidebarNav() {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" render={<Link href="/dashboard" />}>
+            <SidebarMenuButton
+              data-tour="brand"
+              size="lg"
+              render={<Link href="/dashboard" />}
+            >
               <div className="relative size-8 shrink-0 overflow-hidden rounded-md">
                 <Image
                   src="/logo.png"
@@ -106,6 +120,7 @@ export function SidebarNav() {
                 return (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
+                      data-tour={item.tour}
                       tooltip={item.title}
                       isActive={isActive}
                       render={<Link href={item.href} />}

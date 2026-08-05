@@ -96,6 +96,7 @@ export function MeetingChatDrawer({
   return (
     <Sheet>
       <SheetTrigger
+        data-tour="meeting-chat"
         render={
           <Button
             size="icon-lg"
