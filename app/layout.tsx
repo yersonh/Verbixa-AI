@@ -32,6 +32,11 @@ export default function RootLayout({
         theme: dark,
         elements: {
           card: "bg-background/70 backdrop-blur-xl border border-border/50 shadow-2xl shadow-black/20",
+          logoBox: "h-16 w-16 mb-2",
+          logoImage: "h-16 w-16 object-contain",
+          header: "flex-row items-baseline justify-center gap-2 flex-wrap",
+          headerTitle: "text-base",
+          headerSubtitle: "text-sm",
         },
       }}
       localization={esES}
