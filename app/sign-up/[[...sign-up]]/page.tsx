@@ -7,7 +7,7 @@ export default function SignUpPage() {
       <div className="flex flex-1 items-center justify-center py-6">
         <SignUp />
       </div>
-      <Footer variant="floating" />
+      <Footer variant="floating" showLogo={false} />
     </div>
   );
 }
