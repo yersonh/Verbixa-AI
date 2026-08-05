@@ -107,7 +107,11 @@ export function MeetingChatDrawer({
         <span className="sr-only">Preguntar sobre esta reunión</span>
       </SheetTrigger>
 
-      <SheetContent className="flex w-full flex-col sm:max-w-md" side="right">
+      <SheetContent
+        className="flex w-full flex-col sm:max-w-md"
+        overlayClassName="backdrop-blur-none!"
+        side="right"
+      >
         <SheetHeader className="border-b border-border">
           <SheetTitle className="flex items-center gap-2">
             <Sparkles className="size-4 text-primary" />
