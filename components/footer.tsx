@@ -1,5 +1,7 @@
 import Image from "next/image";
 
+import { NexGovTrigger } from "@/components/nexgov-modal";
+
 const CURRENT_YEAR = new Date().getFullYear();
 
 export function Footer() {
@@ -14,8 +16,8 @@ export function Footer() {
           className="h-14 w-auto"
         />
         <p className="text-xs text-muted-foreground">
-          &copy; {CURRENT_YEAR} <span className="font-semibold">NexGovIA S.A.S.®</span> ·
-          Todos los derechos reservados.
+          &copy; {CURRENT_YEAR} <NexGovTrigger /> · Todos los derechos
+          reservados.
         </p>
       </div>
     </footer>
