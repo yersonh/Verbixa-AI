@@ -88,8 +88,17 @@ export async function createBot({
       // Se pide explícitamente un artefacto de audio dedicado (pipeline
       // separado del video_mixed) para diagnosticar/evitar problemas de
       // mezcla de audio en video_mixed.
+      //
+      // `participant_events` viene habilitado por defecto en Recall.ai,
+      // pero especificar `recording_config` manualmente REEMPLAZA todo el
+      // set por defecto en vez de extenderlo — sin este campo explícito,
+      // Recall nunca genera el speaker_timeline_download_url y
+      // getSpeakerTimeline()/resolveSpeakerNames() siempre caen al
+      // fallback "Speaker N" (bug real, detectado porque las reuniones
+      // seguían mostrando "Speaker 0" en vez del nombre real).
       recording_config: {
         audio_mixed_mp3: {},
+        participant_events: {},
       },
     }),
   });
