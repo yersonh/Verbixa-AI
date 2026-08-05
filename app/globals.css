@@ -184,11 +184,13 @@
   margin-bottom: 0 !important;
   border-radius: 9999px !important;
   background: #fff !important;
+  overflow: hidden !important;
 }
 
 .cl-logoImage {
-  width: 5.5rem !important;
-  height: 5.5rem !important;
+  width: 6.7rem !important;
+  height: 6.7rem !important;
+  object-fit: cover !important;
 }
 
 .cl-card {
