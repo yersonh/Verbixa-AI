@@ -4,11 +4,9 @@ import { Fragment } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUser } from "@clerk/react";
-import { Search } from "lucide-react";
 
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { NotificationsMenu } from "@/components/dashboard/notifications-menu";
 import {
@@ -29,7 +27,6 @@ const SEGMENT_LABELS: Record<string, string> = {
   tasks: "Tareas",
   settings: "Configuración",
   invite: "Invitar miembros",
-  search: "Buscar",
 };
 
 const UUID_PATTERN =
@@ -92,15 +89,6 @@ export function DashboardHeader() {
       </Breadcrumb>
 
       <div className="ml-auto flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          nativeButton={false}
-          render={<Link href="/dashboard/search" />}
-        >
-          <Search />
-          <span className="sr-only">Buscar</span>
-        </Button>
         <NotificationsMenu />
         <Separator orientation="vertical" className="h-4" />
         <Avatar size="sm">
