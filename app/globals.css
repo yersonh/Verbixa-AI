@@ -157,6 +157,26 @@
   -webkit-backdrop-filter: blur(24px);
 }
 
+/* El wrapper que envuelve headerTitle + headerSubtitle en los componentes de
+   Clerk (SignIn/SignUp) no tiene una clave propia en `appearance.elements`
+   (queda como un div interno sin nombre), así que se apunta por estructura
+   para ponerlos en una sola línea en vez de apilados. */
+.cl-header > div:last-of-type {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+}
+
+/* Clerk inyecta su propio stylesheet después del nuestro, así que sus reglas
+   ganan el cascade aunque le pasemos className vía `appearance.elements`
+   (misma especificidad, orden de fuente posterior). Se fuerza con
+   !important solo donde es necesario: centrar el logo horizontalmente. */
+.cl-header {
+  align-items: center !important;
+}
+
 @utility brand-gradient-text {
   background-image: linear-gradient(135deg, var(--brand-from), var(--brand-to));
   background-clip: text;
