@@ -7,7 +7,7 @@ export default function SignInPage() {
       <div className="flex flex-1 items-center justify-center py-16">
         <SignIn />
       </div>
-      <Footer />
+      <Footer variant="floating" />
     </div>
   );
 }

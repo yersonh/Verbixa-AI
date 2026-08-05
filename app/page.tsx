@@ -21,7 +21,7 @@ export default function Home() {
           </div>
         </div>
       </PageTransition>
-      <Footer />
+      <Footer variant="floating" />
     </div>
   );
 }
