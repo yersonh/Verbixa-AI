@@ -14,7 +14,7 @@ export default function OnboardingPage() {
         </div>
         <CreateOrganization afterCreateOrganizationUrl="/dashboard" />
       </div>
-      <Footer variant="floating" showLogo={false} />
+      <Footer variant="floating" />
     </div>
   );
 }

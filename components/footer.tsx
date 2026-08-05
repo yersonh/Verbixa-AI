@@ -6,28 +6,22 @@ const CURRENT_YEAR = new Date().getFullYear();
 
 export function Footer({
   variant = "bar",
-  showLogo = true,
 }: {
   /** "bar": franja de ancho completo (dashboard). "floating": tarjeta
    * flotante sobre el fondo con ondas (landing, auth, onboarding). */
   variant?: "bar" | "floating";
-  /** En "floating", oculta el logo cuando la tarjeta de arriba ya lo muestra
-   * (ej. sign-in/sign-up, cuyo header de Clerk usa el mismo logo). */
-  showLogo?: boolean;
 }) {
   if (variant === "floating") {
     return (
       <footer className="flex justify-center px-6 py-4">
         <div className="flex flex-col items-center gap-1.5 rounded-2xl border border-border/50 bg-background/70 px-8 py-3 text-center shadow-lg shadow-black/10 backdrop-blur-xl">
-          {showLogo && (
-            <Image
-              src="/NexGovIA.png"
-              alt="NexGovIA"
-              width={824}
-              height={221}
-              className="h-10 w-auto"
-            />
-          )}
+          <Image
+            src="/NexGovIA.png"
+            alt="NexGovIA"
+            width={824}
+            height={221}
+            className="h-10 w-auto"
+          />
           <p className="text-xs text-muted-foreground">
             &copy; {CURRENT_YEAR} <NexGovTrigger /> · Todos los derechos
             reservados.
