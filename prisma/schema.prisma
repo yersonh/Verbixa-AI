@@ -32,6 +32,7 @@ model User {
 
   meetings     Meeting[] @relation("MeetingCreator")
   notifications Notification[]
+  chatMessages MeetingChatMessage[]
 }
 
 model Meeting {
@@ -54,6 +55,7 @@ model Meeting {
   transcript     Transcript?
   summary        Summary?
   notifications  Notification[]
+  chatMessages   MeetingChatMessage[]
 
   createdAt      DateTime @default(now())
 }
@@ -134,4 +136,27 @@ enum NotificationType {
   MEETING_FAILED
   MEMBER_JOINED
   TASK_ASSIGNED
+}
+
+model MeetingChatMessage {
+  id        String   @id @default(uuid())
+  meetingId String
+  meeting   Meeting  @relation(fields: [meetingId], references: [id])
+
+  role      ChatMessageRole
+  content   String   @db.Text
+
+  // Quién hizo la pregunta (solo aplica a role = USER; las respuestas del
+  // asistente no tienen autor humano).
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@index([meetingId, createdAt])
+}
+
+enum ChatMessageRole {
+  USER
+  ASSISTANT
 }

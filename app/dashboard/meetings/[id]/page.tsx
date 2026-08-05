@@ -9,6 +9,7 @@ import { MeetingPlatformBadge } from "@/components/dashboard/meeting-platform-ba
 import { MeetingStatusBadge } from "@/components/dashboard/meeting-status-badge";
 import { MeetingProcessingState } from "@/components/dashboard/meeting-processing-state";
 import { ExportPdfButton } from "@/components/dashboard/export-pdf-button";
+import { MeetingChatDrawer } from "@/components/dashboard/meeting-chat-drawer";
 import {
   TranscriptView,
   type DiarizedSegment,
@@ -54,6 +55,14 @@ export default async function MeetingPage({
     where: { meetingId: meeting.id },
     include: { tasks: true },
   });
+
+  const chatMessages = transcript
+    ? await prisma.meetingChatMessage.findMany({
+        where: { meetingId: meeting.id },
+        orderBy: { createdAt: "asc" },
+        include: { user: { select: { name: true, email: true } } },
+      })
+    : [];
 
   const formattedDate = new Intl.DateTimeFormat("es", {
     dateStyle: "full",
@@ -167,6 +176,10 @@ export default async function MeetingPage({
           />
         )}
       </div>
+
+      {transcript && (
+        <MeetingChatDrawer meetingId={meeting.id} initialMessages={chatMessages} />
+      )}
     </div>
   );
 }

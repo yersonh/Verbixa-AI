@@ -166,3 +166,72 @@ export async function generateMeetingMinutes(
 
   return parsed as MeetingMinutes;
 }
+
+export interface ChatTurn {
+  role: "user" | "assistant";
+  content: string;
+}
+
+const CHAT_SYSTEM_INSTRUCTION = `Eres un asistente que responde preguntas sobre una reunión corporativa
+específica, usando ÚNICAMENTE la transcripción de esa reunión que se te
+proporciona a continuación como contexto.
+
+Reglas:
+1. Responde solo con información que esté presente en la transcripción. Si la
+   pregunta no se puede responder con la transcripción, dilo explícitamente
+   en vez de inventar una respuesta.
+2. Responde en español, de forma clara y concisa.
+3. Puedes citar quién dijo algo (usando las etiquetas de hablante) y en qué
+   momento aproximado (marca de tiempo), si es relevante para la respuesta.
+4. No repitas la transcripción completa; responde directamente a la pregunta.
+
+TRANSCRIPCIÓN DE LA REUNIÓN:
+{{transcript}}`;
+
+/**
+ * Responde una pregunta sobre una reunión en streaming, usando la
+ * transcripción como contexto (vía systemInstruction) y el historial previo
+ * de la conversación como turnos de chat multi-turno.
+ */
+export async function streamMeetingChatAnswer(
+  transcriptText: string,
+  history: ChatTurn[],
+  question: string,
+): Promise<AsyncGenerator<string>> {
+  const client = getGeminiClient();
+
+  const systemInstruction = CHAT_SYSTEM_INSTRUCTION.replace(
+    "{{transcript}}",
+    transcriptText,
+  );
+
+  const contents = [
+    ...history.map((turn) => ({
+      role: turn.role === "assistant" ? "model" : "user",
+      parts: [{ text: turn.content }],
+    })),
+    { role: "user", parts: [{ text: question }] },
+  ];
+
+  let stream: Awaited<ReturnType<typeof client.models.generateContentStream>>;
+  try {
+    stream = await client.models.generateContentStream({
+      model: "gemini-2.5-flash",
+      contents,
+      config: { systemInstruction },
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(`Gemini API error al responder la pregunta: ${message}`, {
+      cause: err,
+    });
+  }
+
+  async function* textChunks() {
+    for await (const chunk of stream) {
+      if (chunk.text) yield chunk.text;
+    }
+  }
+
+  return textChunks();
+}
