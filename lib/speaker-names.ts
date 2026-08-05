@@ -26,13 +26,20 @@ export function resolveSpeakerNames(
 
     for (const entry of timeline) {
       if (!entry.participant.name) continue;
-      // Rango abierto (start/end nulos): se ignora, no se puede solapar con
-      // certeza contra los segmentos de Deepgram.
-      if (!entry.start_timestamp || !entry.end_timestamp) continue;
+
+      // Rango abierto: Recall deja start/end en null cuando el evento de
+      // habla nunca se cerró (p. ej. la grabación terminó mientras el
+      // participante seguía "hablando", o el evento arrancó antes de que
+      // empezara el tracking). Se trata como si se extendiera hasta el
+      // borde correspondiente de la grabación en vez de descartarlo — de lo
+      // contrario, una reunión corta con un solo tramo de habla sin cerrar
+      // se queda sin ningún voto y todo cae al fallback "Speaker N".
+      const entryStart = entry.start_timestamp?.relative ?? 0;
+      const entryEnd = entry.end_timestamp?.relative ?? Infinity;
 
       const overlap =
-        Math.min(segment.endTime, entry.end_timestamp.relative) -
-        Math.max(segment.startTime, entry.start_timestamp.relative);
+        Math.min(segment.endTime, entryEnd) -
+        Math.max(segment.startTime, entryStart);
 
       if (overlap > 0) {
         votes.set(
