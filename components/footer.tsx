@@ -13,8 +13,8 @@ export function Footer({
 }) {
   if (variant === "floating") {
     return (
-      <footer className="flex justify-center px-6 py-8">
-        <div className="flex flex-col items-center gap-2 rounded-2xl border border-border/50 bg-background/70 px-8 py-5 text-center shadow-lg shadow-black/10 backdrop-blur-xl">
+      <footer className="flex justify-center px-6 py-4">
+        <div className="flex flex-col items-center gap-1.5 rounded-2xl border border-border/50 bg-background/70 px-8 py-3 text-center shadow-lg shadow-black/10 backdrop-blur-xl">
           <Image
             src="/NexGovIA.png"
             alt="NexGovIA"
