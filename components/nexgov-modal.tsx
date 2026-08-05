@@ -73,11 +73,11 @@ export function NexGovTrigger({ className }: { className?: string }) {
               <div className="relative z-10 flex w-full items-center gap-5">
                 <div className="size-20 shrink-0 overflow-hidden rounded-full bg-white shadow-xl outline outline-3 outline-white/25 transition-transform duration-300 hover:scale-110 sm:size-24">
                   <Image
-                    src="/NexGovIA.png"
+                    src="/LogoEmpresa.png"
                     alt="NexGovIA"
-                    width={824}
-                    height={221}
-                    className="h-full w-full object-contain p-2"
+                    width={500}
+                    height={500}
+                    className="h-full w-full object-cover"
                   />
                 </div>
                 <div>
