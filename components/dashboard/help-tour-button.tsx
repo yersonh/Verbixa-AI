@@ -136,7 +136,7 @@ const MEETING_DETAIL_STEPS: DriveStep[] = [
   {
     element: '[data-tour="meeting-chat"]',
     popover: {
-      title: "Pregúntale a Gemini",
+      title: "Asistente IA",
       description:
         "Abre un chat para preguntar lo que quieras sobre esta reunión específica: decisiones, temas puntuales, quién dijo qué, etc.",
     },

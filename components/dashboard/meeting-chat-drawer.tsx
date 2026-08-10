@@ -116,7 +116,7 @@ export function MeetingChatDrawer({
         <SheetHeader className="border-b border-border">
           <SheetTitle className="flex items-center gap-2">
             <Sparkles className="size-4 text-primary" />
-            Pregúntale a Gemini
+            Asistente IA
           </SheetTitle>
           <SheetDescription>
             Responde en base a la transcripción de esta reunión.
