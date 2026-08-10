@@ -1,3 +1,4 @@
+import path from "path";
 import { auth } from "@clerk/nextjs/server";
 import { notFound } from "next/navigation";
 import { MeetingSource, MeetingStatus } from "@prisma/client";
@@ -8,6 +9,7 @@ import { MeetingMinutes } from "@/components/dashboard/meeting-minutes";
 import { MeetingPlatformBadge } from "@/components/dashboard/meeting-platform-badge";
 import { MeetingStatusBadge } from "@/components/dashboard/meeting-status-badge";
 import { MeetingProcessingState } from "@/components/dashboard/meeting-processing-state";
+import { MeetingRecordingPlayer } from "@/components/dashboard/meeting-recording-player";
 import { ExportPdfButton } from "@/components/dashboard/export-pdf-button";
 import { MeetingChatDrawer } from "@/components/dashboard/meeting-chat-drawer";
 import {
@@ -22,6 +24,8 @@ const IN_PROGRESS_STATUSES: MeetingStatus[] = [
   MeetingStatus.RECORDING,
   MeetingStatus.PROCESSING,
 ];
+
+const VIDEO_EXTENSIONS = new Set([".mp4", ".mov", ".webm", ".mkv", ".avi"]);
 
 export default async function MeetingPage({
   params,
@@ -73,6 +77,14 @@ export default async function MeetingPage({
   const platform = meeting.meetingUrl
     ? detectMeetingPlatform(meeting.meetingUrl)
     : null;
+
+  // Los bots de Recall.ai solo generan audio (audio_mixed_mp3); solo los
+  // archivos subidos por el usuario pueden ser video.
+  const recordingMediaType: "audio" | "video" =
+    meeting.source === MeetingSource.UPLOAD &&
+    VIDEO_EXTENSIONS.has(path.extname(meeting.recordingUrl ?? "").toLowerCase())
+      ? "video"
+      : "audio";
 
   return (
     <div className="flex flex-1 flex-col gap-6">
@@ -136,6 +148,16 @@ export default async function MeetingPage({
           ) : null}
         </dl>
       </div>
+
+      {meeting.recordingUrl && (
+        <div className="flex flex-col gap-3">
+          <h2 className="text-lg font-semibold tracking-tight">Grabación</h2>
+          <MeetingRecordingPlayer
+            meetingId={meeting.id}
+            mediaType={recordingMediaType}
+          />
+        </div>
+      )}
 
       <div data-tour="meeting-transcript" className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold tracking-tight">
