@@ -154,8 +154,8 @@
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
-    filter: blur(6px);
-    transform: scale(1.03);
+    filter: blur(2px);
+    transform: scale(1.01);
   }
   html {
     @apply font-sans;
