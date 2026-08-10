@@ -2,12 +2,11 @@ import { createReadStream } from "fs";
 import { stat } from "fs/promises";
 import { Readable } from "stream";
 import path from "path";
-import { auth } from "@clerk/nextjs/server";
 import { NextResponse, type NextRequest } from "next/server";
 import { MeetingSource } from "@prisma/client";
 
-import { prisma } from "@/lib/prisma";
-import { getRecordingDownloadUrl } from "@/lib/recall";
+import { getRecordingPlaybackUrl } from "@/lib/recall";
+import { resolveMeetingForRecording } from "./shared";
 
 const CONTENT_TYPES: Record<string, string> = {
   ".mp3": "audio/mpeg",
@@ -51,36 +50,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const { orgId } = await auth();
 
-  if (!orgId) {
-    return NextResponse.json(
-      { error: "No autenticado o sin organización activa" },
-      { status: 401 },
-    );
-  }
-
-  const organization = await prisma.organization.findUnique({
-    where: { clerkOrgId: orgId },
-  });
-
-  if (!organization) {
-    return NextResponse.json(
-      { error: "Organización no encontrada" },
-      { status: 404 },
-    );
-  }
-
-  const meeting = await prisma.meeting.findFirst({
-    where: { id, organizationId: organization.id },
-  });
-
-  if (!meeting || !meeting.recordingUrl) {
-    return NextResponse.json(
-      { error: "La grabación no está disponible para esta reunión." },
-      { status: 404 },
-    );
-  }
+  const resolved = await resolveMeetingForRecording(id);
+  if ("error" in resolved) return resolved.error;
+  const { meeting } = resolved;
 
   const wantsDownload = req.nextUrl.searchParams.get("download") === "1";
   const filename = `grabacion-${slugify(meeting.title || meeting.id)}`;
@@ -93,11 +66,11 @@ export async function GET(
       );
     }
 
-    const freshUrl = await getRecordingDownloadUrl(meeting.recallBotId).catch(
+    const playback = await getRecordingPlaybackUrl(meeting.recallBotId).catch(
       () => null,
     );
 
-    if (!freshUrl) {
+    if (!playback) {
       return NextResponse.json(
         {
           error:
@@ -108,10 +81,10 @@ export async function GET(
     }
 
     if (!wantsDownload) {
-      return NextResponse.redirect(freshUrl, { status: 302 });
+      return NextResponse.redirect(playback.url, { status: 302 });
     }
 
-    const upstream = await fetch(freshUrl);
+    const upstream = await fetch(playback.url);
     if (!upstream.ok || !upstream.body) {
       return NextResponse.json(
         { error: "No se pudo descargar la grabación." },
@@ -119,11 +92,12 @@ export async function GET(
       );
     }
 
+    const isVideo = playback.mediaType === "video";
     return new NextResponse(upstream.body, {
       status: 200,
       headers: {
-        "Content-Type": "audio/mpeg",
-        "Content-Disposition": `attachment; filename="${filename}.mp3"`,
+        "Content-Type": isVideo ? "video/mp4" : "audio/mpeg",
+        "Content-Disposition": `attachment; filename="${filename}.${isVideo ? "mp4" : "mp3"}"`,
       },
     });
   }

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { MeetingSource } from "@prisma/client";
 import {
   CircleOff,
   Download,
@@ -50,10 +51,17 @@ function formatTime(seconds: number) {
 
 export function MeetingRecordingPlayer({
   meetingId,
-  mediaType,
+  source,
+  mediaType: staticMediaType,
 }: {
   meetingId: string;
-  mediaType: "audio" | "video";
+  source: MeetingSource;
+  /** Conocido de antemano solo para MeetingSource.UPLOAD (se deriva de la
+   * extensión del archivo). Para RECALL_BOT se resuelve en el cliente
+   * porque depende de si Recall llegó a generar video_mixed o no — algo
+   * que solo se sabe consultando /recording/meta, no de datos guardados
+   * en la reunión. */
+  mediaType?: "audio" | "video";
 }) {
   const src = `/api/meetings/${meetingId}/recording`;
   const downloadHref = `${src}?download=1`;
@@ -61,6 +69,9 @@ export function MeetingRecordingPlayer({
   const mediaRef = useRef<HTMLAudioElement | HTMLVideoElement>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">(
     "loading",
+  );
+  const [mediaType, setMediaType] = useState<"audio" | "video" | null>(
+    staticMediaType ?? null,
   );
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -74,11 +85,40 @@ export function MeetingRecordingPlayer({
   );
 
   useEffect(() => {
-    setStatus("loading");
     setIsPlaying(false);
     setCurrentTime(0);
     setDuration(0);
-  }, [meetingId]);
+
+    if (source === MeetingSource.UPLOAD) {
+      setMediaType(staticMediaType ?? "audio");
+      setStatus("loading");
+      return;
+    }
+
+    // RECALL_BOT: primero se pregunta si es audio o video (y si sigue
+    // disponible) antes de montar el elemento <audio>/<video>.
+    setMediaType(null);
+    setStatus("loading");
+    let cancelled = false;
+
+    fetch(`/api/meetings/${meetingId}/recording/meta`)
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((data: { available: boolean; mediaType?: "audio" | "video" }) => {
+        if (cancelled) return;
+        if (!data.available || !data.mediaType) {
+          setStatus("error");
+          return;
+        }
+        setMediaType(data.mediaType);
+      })
+      .catch(() => {
+        if (!cancelled) setStatus("error");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [meetingId, source, staticMediaType]);
 
   function togglePlay() {
     const media = mediaRef.current;
@@ -123,7 +163,7 @@ export function MeetingRecordingPlayer({
   const progress = duration > 0 ? currentTime / duration : 0;
 
   const mediaElement =
-    mediaType === "video" ? (
+    mediaType === null ? null : mediaType === "video" ? (
       <video
         ref={mediaRef as React.RefObject<HTMLVideoElement>}
         src={src}
@@ -170,6 +210,14 @@ export function MeetingRecordingPlayer({
           className="min-h-[160px]"
         />
       </>
+    );
+  }
+
+  if (mediaType === null) {
+    return (
+      <div className="flex min-h-[88px] animate-pulse items-center justify-center rounded-xl border border-border bg-muted/40 p-4">
+        <Loader2 className="size-5 animate-spin text-muted-foreground" />
+      </div>
     );
   }
 

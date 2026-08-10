@@ -78,13 +78,18 @@ export default async function MeetingPage({
     ? detectMeetingPlatform(meeting.meetingUrl)
     : null;
 
-  // Los bots de Recall.ai solo generan audio (audio_mixed_mp3); solo los
-  // archivos subidos por el usuario pueden ser video.
-  const recordingMediaType: "audio" | "video" =
-    meeting.source === MeetingSource.UPLOAD &&
-    VIDEO_EXTENSIONS.has(path.extname(meeting.recordingUrl ?? "").toLowerCase())
-      ? "video"
-      : "audio";
+  // Para archivos subidos el tipo de medio se conoce de la extensión del
+  // archivo. Para reuniones de bot (RECALL_BOT) se resuelve en el cliente
+  // (MeetingRecordingPlayer) porque depende de si Recall llegó a generar
+  // video_mixed o no, algo que no vive en la BD.
+  const uploadMediaType: "audio" | "video" | undefined =
+    meeting.source === MeetingSource.UPLOAD
+      ? VIDEO_EXTENSIONS.has(
+          path.extname(meeting.recordingUrl ?? "").toLowerCase(),
+        )
+        ? "video"
+        : "audio"
+      : undefined;
 
   return (
     <div className="flex flex-1 flex-col gap-6">
@@ -154,7 +159,8 @@ export default async function MeetingPage({
           <h2 className="text-lg font-semibold tracking-tight">Grabación</h2>
           <MeetingRecordingPlayer
             meetingId={meeting.id}
-            mediaType={recordingMediaType}
+            source={meeting.source}
+            mediaType={uploadMediaType}
           />
         </div>
       )}

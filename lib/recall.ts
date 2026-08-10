@@ -98,6 +98,7 @@ export async function createBot({
       // seguían mostrando "Speaker 0" en vez del nombre real).
       recording_config: {
         audio_mixed_mp3: {},
+        video_mixed_mp4: {},
         participant_events: {},
         // Sin este campo, Recall retiene la grabación indefinidamente por
         // defecto ("forever") en cuentas creadas después del 12/jun/2025,
@@ -125,6 +126,12 @@ async function getLatestRecording(botId: string): Promise<RecallRecording | null
 /**
  * Descarga la URL de la grabación de un bot una vez finalizada la reunión.
  * Devuelve null si el bot todavía no tiene ninguna grabación asociada.
+ *
+ * Se usa para transcripción (Deepgram): por eso prioriza el artefacto de
+ * audio dedicado sobre el audio muxeado dentro de video_mixed, sin importar
+ * que video_mixed también esté disponible. No confundir con
+ * getRecordingPlaybackUrl(), que es la que decide qué mostrar en el
+ * reproductor del dashboard.
  */
 export async function getRecordingDownloadUrl(
   botId: string,
@@ -133,12 +140,38 @@ export async function getRecordingDownloadUrl(
   if (!recording) return null;
 
   return (
-    // Se prioriza el artefacto de audio dedicado (mismo que solicitamos en
-    // recording_config) sobre el audio muxeado dentro de video_mixed.
     recording.media_shortcuts.audio_mixed?.data?.download_url ??
     recording.media_shortcuts.video_mixed?.data?.download_url ??
     null
   );
+}
+
+export interface RecallPlaybackUrl {
+  url: string;
+  mediaType: "audio" | "video";
+}
+
+/**
+ * URL de reproducción/descarga para el dashboard: a diferencia de
+ * getRecordingDownloadUrl(), prioriza video_mixed (la grabación completa de
+ * la reunión) sobre el audio_mixed dedicado, ya que para un usuario viendo
+ * el reproductor el video es la experiencia más completa cuando existe.
+ * Cae a audio si el bot no capturó video (p. ej. grabaciones anteriores a
+ * que se habilitara video_mixed_mp4). Devuelve null si no hay grabación.
+ */
+export async function getRecordingPlaybackUrl(
+  botId: string,
+): Promise<RecallPlaybackUrl | null> {
+  const recording = await getLatestRecording(botId);
+  if (!recording) return null;
+
+  const videoUrl = recording.media_shortcuts.video_mixed?.data?.download_url;
+  if (videoUrl) return { url: videoUrl, mediaType: "video" };
+
+  const audioUrl = recording.media_shortcuts.audio_mixed?.data?.download_url;
+  if (audioUrl) return { url: audioUrl, mediaType: "audio" };
+
+  return null;
 }
 
 /**
