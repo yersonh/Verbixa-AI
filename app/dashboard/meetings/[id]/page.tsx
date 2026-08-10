@@ -9,6 +9,7 @@ import { MeetingMinutes } from "@/components/dashboard/meeting-minutes";
 import { MeetingPlatformBadge } from "@/components/dashboard/meeting-platform-badge";
 import { MeetingStatusBadge } from "@/components/dashboard/meeting-status-badge";
 import { MeetingProcessingState } from "@/components/dashboard/meeting-processing-state";
+import { MeetingLiveRefresher } from "@/components/dashboard/meeting-live-refresher";
 import { MeetingRecordingPlayer } from "@/components/dashboard/meeting-recording-player";
 import { ExportPdfButton } from "@/components/dashboard/export-pdf-button";
 import { MeetingChatDrawer } from "@/components/dashboard/meeting-chat-drawer";
@@ -74,6 +75,11 @@ export default async function MeetingPage({
   }).format(meeting.scheduledAt);
 
   const isInProgress = IN_PROGRESS_STATUSES.includes(meeting.status);
+  // El summary-worker sigue corriendo después de que el status ya pasó a
+  // COMPLETED (la transcripción se considera lista antes que el acta), así
+  // que "sigue generándose" no es lo mismo que "isInProgress".
+  const summaryPending =
+    !summary && meeting.status !== MeetingStatus.FAILED && (isInProgress || Boolean(transcript));
   const platform = meeting.meetingUrl
     ? detectMeetingPlatform(meeting.meetingUrl)
     : null;
@@ -93,6 +99,13 @@ export default async function MeetingPage({
 
   return (
     <div className="flex flex-1 flex-col gap-6">
+      <MeetingLiveRefresher
+        meetingId={meeting.id}
+        status={meeting.status}
+        hasTranscript={Boolean(transcript)}
+        hasSummary={Boolean(summary)}
+      />
+
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">
@@ -194,8 +207,11 @@ export default async function MeetingPage({
           <div className="rounded-xl border border-border bg-card p-4">
             <MeetingMinutes summary={summary} />
           </div>
-        ) : isInProgress ? (
-          <MeetingProcessingState status={meeting.status} />
+        ) : summaryPending ? (
+          <MeetingProcessingState
+            status={meeting.status}
+            message={!isInProgress ? "Generando el acta con IA…" : undefined}
+          />
         ) : (
           <EmptyState
             icon={ScrollText}

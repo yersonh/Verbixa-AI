@@ -14,10 +14,15 @@ const STATUS_MESSAGES: Partial<Record<MeetingStatus, string>> = {
 
 export function MeetingProcessingState({
   status,
+  message: messageOverride,
 }: {
   status: MeetingStatus;
+  /** Sobreescribe el mensaje por defecto asociado al status (p. ej. para
+   * distinguir "generando el acta" de "procesando la grabación" cuando
+   * ambos ocurren con status = COMPLETED). */
+  message?: string;
 }) {
-  const message = STATUS_MESSAGES[status];
+  const message = messageOverride ?? STATUS_MESSAGES[status];
 
   if (!message) {
     return null;
