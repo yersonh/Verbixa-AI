@@ -99,6 +99,10 @@ export async function createBot({
       recording_config: {
         audio_mixed_mp3: {},
         participant_events: {},
+        // Sin este campo, Recall retiene la grabación indefinidamente por
+        // defecto ("forever") en cuentas creadas después del 12/jun/2025,
+        // generando costo de storage sin límite. 720h = 30 días.
+        retention: { type: "timed", hours: 720 },
       },
     }),
   });
