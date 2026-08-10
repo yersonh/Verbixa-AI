@@ -230,13 +230,16 @@ export function MeetingRecordingPlayer({
           </div>
         )}
         {mediaElement}
-        <a
-          href={downloadHref}
-          className="inline-flex w-fit items-center gap-1.5 text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-fit border-border/80 bg-card dark:bg-card dark:hover:bg-card/70"
+          nativeButton={false}
+          render={<a href={downloadHref} />}
         >
-          <Download className="size-3.5" />
+          <Download />
           Descargar grabación
-        </a>
+        </Button>
       </div>
     );
   }
