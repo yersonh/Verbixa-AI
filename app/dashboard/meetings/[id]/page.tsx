@@ -12,6 +12,7 @@ import { MeetingProcessingState } from "@/components/dashboard/meeting-processin
 import { MeetingLiveRefresher } from "@/components/dashboard/meeting-live-refresher";
 import { MeetingRecordingPlayer } from "@/components/dashboard/meeting-recording-player";
 import { ExportPdfButton } from "@/components/dashboard/export-pdf-button";
+import { ExportTranscriptButton } from "@/components/dashboard/export-transcript-button";
 import { MeetingChatDrawer } from "@/components/dashboard/meeting-chat-drawer";
 import {
   TranscriptView,
@@ -179,9 +180,12 @@ export default async function MeetingPage({
       )}
 
       <div data-tour="meeting-transcript" className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold tracking-tight">
-          Transcripción
-        </h2>
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="text-lg font-semibold tracking-tight">
+            Transcripción
+          </h2>
+          {transcript && <ExportTranscriptButton meetingId={meeting.id} />}
+        </div>
 
         {transcript ? (
           <div className="rounded-xl border border-border bg-card p-4">

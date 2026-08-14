@@ -2,12 +2,13 @@
 
 import { useMemo, useState } from "react";
 
-export interface DiarizedSegment {
-  speaker: string;
-  text: string;
-  startTime: number;
-  endTime: number;
-}
+import {
+  groupConsecutiveSegments,
+  formatTimestamp,
+  type DiarizedSegment,
+} from "@/lib/transcript-format";
+
+export type { DiarizedSegment };
 
 interface SpeakerPalette {
   bubble: string;
@@ -59,34 +60,6 @@ function initialsForSpeaker(speaker: string): string {
     return `S${match[1]}`;
   }
   return speaker.slice(0, 2).toUpperCase();
-}
-
-function formatTimestamp(seconds: number): string {
-  const safeSeconds = Number.isFinite(seconds) && seconds > 0 ? seconds : 0;
-  const totalSeconds = Math.floor(safeSeconds);
-  const minutes = Math.floor(totalSeconds / 60);
-  const secs = totalSeconds % 60;
-  return `${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-}
-
-interface SegmentGroup {
-  speaker: string;
-  segments: DiarizedSegment[];
-}
-
-function groupConsecutiveSegments(segments: DiarizedSegment[]): SegmentGroup[] {
-  const groups: SegmentGroup[] = [];
-
-  for (const segment of segments) {
-    const lastGroup = groups[groups.length - 1];
-    if (lastGroup && lastGroup.speaker === segment.speaker) {
-      lastGroup.segments.push(segment);
-    } else {
-      groups.push({ speaker: segment.speaker, segments: [segment] });
-    }
-  }
-
-  return groups;
 }
 
 export function TranscriptView({ segments }: { segments: DiarizedSegment[] }) {
