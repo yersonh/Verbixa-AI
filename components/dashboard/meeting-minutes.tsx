@@ -4,11 +4,16 @@ interface MeetingMinutesSummary {
   id: string;
   executiveSummary: string;
   keyDecisions: unknown;
+  conclusions: string;
   tasks: ChecklistTask[];
 }
 
 export function MeetingMinutes({ summary }: { summary: MeetingMinutesSummary }) {
   const keyDecisions = summary.keyDecisions as string[];
+  const summaryParagraphs = summary.executiveSummary
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
 
   return (
     <div className="flex flex-col gap-6">
@@ -16,9 +21,13 @@ export function MeetingMinutes({ summary }: { summary: MeetingMinutesSummary }) 
         <h3 className="text-sm font-semibold text-foreground">
           Resumen ejecutivo
         </h3>
-        <p className="text-sm leading-relaxed text-muted-foreground">
-          {summary.executiveSummary}
-        </p>
+        <div className="flex flex-col gap-2">
+          {summaryParagraphs.map((paragraph, index) => (
+            <p key={index} className="text-sm leading-relaxed text-muted-foreground">
+              {paragraph}
+            </p>
+          ))}
+        </div>
       </div>
 
       <div className="flex flex-col gap-2">
@@ -36,6 +45,15 @@ export function MeetingMinutes({ summary }: { summary: MeetingMinutesSummary }) 
             Sin decisiones registradas.
           </p>
         )}
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <h3 className="text-sm font-semibold text-foreground">
+          Conclusiones
+        </h3>
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          {summary.conclusions}
+        </p>
       </div>
 
       <div className="flex flex-col gap-2">

@@ -10,6 +10,7 @@ interface MeetingForPdf {
   summary: {
     executiveSummary: string;
     keyDecisions: unknown;
+    conclusions: string;
     tasks: {
       id: string;
       description: string;
@@ -92,6 +93,14 @@ function renderActaPdf(meeting: MeetingForPdf): Promise<Buffer> {
         .text("Sin decisiones registradas.")
         .fillColor("#1a1a1a");
     }
+    doc.moveDown(1.2);
+
+    doc.fontSize(14).font("Helvetica-Bold").text("Conclusiones");
+    doc.moveDown(0.3);
+    doc
+      .fontSize(11)
+      .font("Helvetica")
+      .text(meeting.summary.conclusions, { lineGap: 3 });
     doc.moveDown(1.2);
 
     doc.fontSize(14).font("Helvetica-Bold").text("Tareas");

@@ -42,11 +42,13 @@ async function processSummaryJob(job: Job<SummaryJobData>): Promise<void> {
       update: {
         executiveSummary: minutes.executiveSummary,
         keyDecisions: minutes.keyDecisions as unknown as Prisma.InputJsonValue,
+        conclusions: minutes.conclusions,
       },
       create: {
         meetingId: meeting.id,
         executiveSummary: minutes.executiveSummary,
         keyDecisions: minutes.keyDecisions as unknown as Prisma.InputJsonValue,
+        conclusions: minutes.conclusions,
       },
     });
 

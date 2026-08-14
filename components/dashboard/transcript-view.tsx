@@ -1,3 +1,7 @@
+"use client";
+
+import { useMemo, useState } from "react";
+
 export interface DiarizedSegment {
   speaker: string;
   text: string;
@@ -86,6 +90,12 @@ function groupConsecutiveSegments(segments: DiarizedSegment[]): SegmentGroup[] {
 }
 
 export function TranscriptView({ segments }: { segments: DiarizedSegment[] }) {
+  const speakerOrder = useMemo(
+    () => Array.from(new Set(segments.map((s) => s.speaker))),
+    [segments],
+  );
+  const [speakerFilter, setSpeakerFilter] = useState<string | null>(null);
+
   if (!segments || segments.length === 0) {
     return (
       <div className="flex min-h-[160px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border">
@@ -94,11 +104,53 @@ export function TranscriptView({ segments }: { segments: DiarizedSegment[] }) {
     );
   }
 
-  const speakerOrder = Array.from(new Set(segments.map((s) => s.speaker)));
-  const groups = groupConsecutiveSegments(segments);
+  const filteredSegments = speakerFilter
+    ? segments.filter((s) => s.speaker === speakerFilter)
+    : segments;
+  const groups = groupConsecutiveSegments(filteredSegments);
 
   return (
     <div className="flex flex-col gap-4">
+      {speakerOrder.length > 1 && (
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setSpeakerFilter(null)}
+            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+              speakerFilter === null
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border text-muted-foreground hover:bg-muted"
+            }`}
+          >
+            Todos
+          </button>
+          {speakerOrder.map((speaker) => {
+            const palette = paletteForSpeaker(speaker, speakerOrder);
+            const isActive = speakerFilter === speaker;
+            return (
+              <button
+                key={speaker}
+                type="button"
+                onClick={() => setSpeakerFilter(speaker)}
+                className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                  isActive
+                    ? `${palette.avatar} border-transparent`
+                    : "border-border text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                {speaker}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {groups.length === 0 && (
+        <p className="text-sm text-muted-foreground">
+          Este hablante no tiene intervenciones.
+        </p>
+      )}
+
       {groups.map((group, groupIndex) => {
         const palette = paletteForSpeaker(group.speaker, speakerOrder);
 

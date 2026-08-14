@@ -12,6 +12,7 @@ export interface MeetingMinutesTask {
 export interface MeetingMinutes {
   executiveSummary: string;
   keyDecisions: string[];
+  conclusions: string;
   tasks: MeetingMinutesTask[];
 }
 
@@ -21,8 +22,9 @@ completa de una reunión, con cada intervención marcada por hablante y marca de
 Tu tarea es generar un acta estructurada en formato JSON siguiendo EXACTAMENTE este esquema:
 
 {
-  "executiveSummary": "string (2-4 oraciones resumiendo el propósito y resultado de la reunión)",
+  "executiveSummary": "string (ver regla 6 sobre extensión)",
   "keyDecisions": ["string", "string", ...],
+  "conclusions": "string (ver regla 7)",
   "tasks": [
     {
       "description": "string (qué hay que hacer, en forma de acción clara)",
@@ -41,8 +43,19 @@ REGLAS IMPORTANTES:
    (ej. "para el viernes", "antes del 15"). Si no se mencionó, usa null en "dueDate".
 4. Si la reunión no tuvo decisiones claras o tareas asignadas, devuelve arreglos vacíos
    en lugar de inventar contenido.
-5. El resumen ejecutivo debe ser neutral y factual, sin opiniones ni suposiciones.
-6. Responde ÚNICAMENTE con el JSON, sin texto adicional antes o después, sin markdown,
+5. El resumen ejecutivo y las conclusiones deben ser neutrales y factuales, sin
+   opiniones ni suposiciones.
+6. Extensión de "executiveSummary": debe tener 3 párrafos (separados por \\n\\n) SOLO
+   si la transcripción tiene contenido suficiente para sostenerlos sin relleno ni
+   repetición (en la práctica, reuniones de más de ~20 minutos o con varios temas
+   tratados). Si la reunión es corta o tiene poco contenido (p. ej. una prueba de un
+   minuto), usa 1-2 oraciones en un solo párrafo en lugar de forzar 3 párrafos vacíos
+   de contenido real.
+7. "conclusions": un cierre breve (1-2 oraciones, o un párrafo corto si el contenido lo
+   amerita) con el balance final o próximos pasos generales de la reunión, distinto del
+   resumen ejecutivo. Si no hay contenido suficiente para una conclusión real, usa una
+   frase breve que indique que la reunión fue demasiado breve para extraer conclusiones.
+8. Responde ÚNICAMENTE con el JSON, sin texto adicional antes o después, sin markdown,
    sin \`\`\`json.
 
 TRANSCRIPCIÓN:
@@ -53,6 +66,7 @@ const MEETING_MINUTES_RESPONSE_SCHEMA = {
   properties: {
     executiveSummary: { type: Type.STRING },
     keyDecisions: { type: Type.ARRAY, items: { type: Type.STRING } },
+    conclusions: { type: Type.STRING },
     tasks: {
       type: Type.ARRAY,
       items: {
@@ -66,7 +80,7 @@ const MEETING_MINUTES_RESPONSE_SCHEMA = {
       },
     },
   },
-  required: ["executiveSummary", "keyDecisions", "tasks"],
+  required: ["executiveSummary", "keyDecisions", "conclusions", "tasks"],
 };
 
 /**
@@ -157,10 +171,11 @@ export async function generateMeetingMinutes(
     parsed === null ||
     typeof (parsed as MeetingMinutes).executiveSummary !== "string" ||
     !Array.isArray((parsed as MeetingMinutes).keyDecisions) ||
+    typeof (parsed as MeetingMinutes).conclusions !== "string" ||
     !Array.isArray((parsed as MeetingMinutes).tasks)
   ) {
     throw new Error(
-      "La respuesta de Gemini no tiene la forma esperada de MeetingMinutes (executiveSummary/keyDecisions/tasks)",
+      "La respuesta de Gemini no tiene la forma esperada de MeetingMinutes (executiveSummary/keyDecisions/conclusions/tasks)",
     );
   }
 
