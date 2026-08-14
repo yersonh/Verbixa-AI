@@ -3,7 +3,7 @@
 import { Fragment } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useUser } from "@clerk/react";
+import { useOrganization, useUser } from "@clerk/react";
 
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
@@ -58,6 +58,7 @@ function initials(name: string) {
 export function DashboardHeader() {
   const pathname = usePathname();
   const { user } = useUser();
+  const { organization } = useOrganization();
   const crumbs = buildCrumbs(pathname);
 
   const displayName =
@@ -90,6 +91,20 @@ export function DashboardHeader() {
       </Breadcrumb>
 
       <div className="ml-auto flex items-center gap-2">
+        {organization && (
+          <>
+            <div className="flex items-center gap-2">
+              <Avatar size="sm">
+                <AvatarImage src={organization.imageUrl} alt={organization.name} />
+                <AvatarFallback>{initials(organization.name)}</AvatarFallback>
+              </Avatar>
+              <span className="hidden text-sm font-medium text-foreground sm:inline">
+                {organization.name}
+              </span>
+            </div>
+            <Separator orientation="vertical" className="h-4" />
+          </>
+        )}
         <HelpTourButton />
         <div data-tour="notifications">
           <NotificationsMenu />
