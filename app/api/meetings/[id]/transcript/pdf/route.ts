@@ -6,6 +6,8 @@ import { prisma } from "@/lib/prisma";
 import {
   groupConsecutiveSegments,
   formatTimestamp,
+  filterSegmentsBySpeaker,
+  joinSegmentsText,
   type DiarizedSegment,
 } from "@/lib/transcript-format";
 
@@ -31,6 +33,8 @@ function renderTranscriptPdf(meeting: {
   title: string;
   scheduledAt: Date;
   segments: DiarizedSegment[];
+  showTimestamps: boolean;
+  speaker: string | null;
 }): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({ size: "A4", margin: 50 });
@@ -50,9 +54,19 @@ function renderTranscriptPdf(meeting: {
     doc.fillColor("#1a1a1a");
 
     doc.fontSize(14).font("Helvetica-Bold").text("Transcripción");
+    if (meeting.speaker) {
+      doc
+        .fontSize(10)
+        .font("Helvetica-Oblique")
+        .fillColor("#666666")
+        .text(`Filtrado por: ${meeting.speaker}`)
+        .fillColor("#1a1a1a");
+    }
     doc.moveDown(0.5);
 
-    const groups = groupConsecutiveSegments(meeting.segments);
+    const groups = groupConsecutiveSegments(
+      filterSegmentsBySpeaker(meeting.segments, meeting.speaker),
+    );
 
     if (groups.length === 0) {
       doc
@@ -66,13 +80,24 @@ function renderTranscriptPdf(meeting: {
     for (const group of groups) {
       doc.fontSize(11).font("Helvetica-Bold").fillColor("#1a1a1a").text(group.speaker);
       doc.moveDown(0.2);
-      for (const segment of group.segments) {
+      if (meeting.showTimestamps) {
+        for (const segment of group.segments) {
+          doc
+            .fontSize(10)
+            .font("Helvetica")
+            .fillColor("#1a1a1a")
+            .text(`[${formatTimestamp(segment.startTime)}]  ${segment.text}`, {
+              lineGap: 2,
+            });
+        }
+      } else {
         doc
           .fontSize(10)
           .font("Helvetica")
           .fillColor("#1a1a1a")
-          .text(`[${formatTimestamp(segment.startTime)}]  ${segment.text}`, {
+          .text(joinSegmentsText(group.segments), {
             lineGap: 2,
+            align: "justify",
           });
       }
       doc.moveDown(0.8);
@@ -83,10 +108,13 @@ function renderTranscriptPdf(meeting: {
 }
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
+  const url = new URL(req.url);
+  const showTimestamps = url.searchParams.get("timestamps") !== "false";
+  const speaker = url.searchParams.get("speaker") || null;
   const { userId, orgId } = await auth();
 
   if (!userId || !orgId) {
@@ -130,9 +158,13 @@ export async function GET(
     title: meeting.title,
     scheduledAt: meeting.scheduledAt,
     segments: meeting.transcript.segments as unknown as DiarizedSegment[],
+    showTimestamps,
+    speaker,
   });
 
-  const filename = `transcripcion-${slugify(meeting.title || meeting.id)}.pdf`;
+  const filenameParts = ["transcripcion", slugify(meeting.title || meeting.id)];
+  if (speaker) filenameParts.push(slugify(speaker));
+  const filename = `${filenameParts.join("-")}.pdf`;
 
   return new Response(new Uint8Array(buffer), {
     headers: {

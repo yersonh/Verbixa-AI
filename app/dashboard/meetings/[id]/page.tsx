@@ -12,12 +12,9 @@ import { MeetingProcessingState } from "@/components/dashboard/meeting-processin
 import { MeetingLiveRefresher } from "@/components/dashboard/meeting-live-refresher";
 import { MeetingRecordingPlayer } from "@/components/dashboard/meeting-recording-player";
 import { ExportPdfButton } from "@/components/dashboard/export-pdf-button";
-import { ExportTranscriptButton } from "@/components/dashboard/export-transcript-button";
 import { MeetingChatDrawer } from "@/components/dashboard/meeting-chat-drawer";
-import {
-  TranscriptView,
-  type DiarizedSegment,
-} from "@/components/dashboard/transcript-view";
+import { TranscriptSection } from "@/components/dashboard/transcript-section";
+import { type DiarizedSegment } from "@/components/dashboard/transcript-view";
 import { detectMeetingPlatform } from "@/lib/meeting-platform";
 import { prisma } from "@/lib/prisma";
 
@@ -180,27 +177,26 @@ export default async function MeetingPage({
       )}
 
       <div data-tour="meeting-transcript" className="flex flex-col gap-3">
-        <div className="flex items-center justify-between gap-4">
-          <h2 className="text-lg font-semibold tracking-tight">
-            Transcripción
-          </h2>
-          {transcript && <ExportTranscriptButton meetingId={meeting.id} />}
-        </div>
-
         {transcript ? (
-          <div className="rounded-xl border border-border bg-card p-4">
-            <TranscriptView
-              segments={transcript.segments as unknown as DiarizedSegment[]}
-            />
-          </div>
-        ) : isInProgress ? (
-          <MeetingProcessingState status={meeting.status} />
-        ) : (
-          <EmptyState
-            icon={FileText}
-            message="La transcripción todavía no está disponible."
-            className="min-h-[160px]"
+          <TranscriptSection
+            meetingId={meeting.id}
+            segments={transcript.segments as unknown as DiarizedSegment[]}
           />
+        ) : (
+          <>
+            <h2 className="text-lg font-semibold tracking-tight">
+              Transcripción
+            </h2>
+            {isInProgress ? (
+              <MeetingProcessingState status={meeting.status} />
+            ) : (
+              <EmptyState
+                icon={FileText}
+                message="La transcripción todavía no está disponible."
+                className="min-h-[160px]"
+              />
+            )}
+          </>
         )}
       </div>
 

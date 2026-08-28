@@ -29,6 +29,35 @@ export function groupConsecutiveSegments(
   return groups;
 }
 
+/**
+ * Une el texto de varios segmentos en un solo párrafo. Se usa para la
+ * exportación "sin marcas de tiempo": aunque el hablante lo dijo de corrido,
+ * la diarización lo parte en varias líneas. Colapsa espacios repetidos y
+ * evita duplicar el espacio cuando un segmento ya termina en signo de
+ * puntuación.
+ */
+export function joinSegmentsText(segments: DiarizedSegment[]): string {
+  return segments
+    .map((segment) => segment.text.trim())
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Filtra los segmentos por hablante. Si `speaker` es null/undefined devuelve
+ * todos. Se comparte entre la UI y las rutas de exportación para que la
+ * descarga respete el filtro de hablante seleccionado.
+ */
+export function filterSegmentsBySpeaker(
+  segments: DiarizedSegment[],
+  speaker: string | null | undefined,
+): DiarizedSegment[] {
+  if (!speaker) return segments;
+  return segments.filter((segment) => segment.speaker === speaker);
+}
+
 export function formatTimestamp(seconds: number): string {
   const safeSeconds = Number.isFinite(seconds) && seconds > 0 ? seconds : 0;
   const totalSeconds = Math.floor(safeSeconds);

@@ -62,12 +62,22 @@ function initialsForSpeaker(speaker: string): string {
   return speaker.slice(0, 2).toUpperCase();
 }
 
-export function TranscriptView({ segments }: { segments: DiarizedSegment[] }) {
+export function TranscriptView({
+  segments,
+  onSpeakerFilterChange,
+}: {
+  segments: DiarizedSegment[];
+  onSpeakerFilterChange?: (speaker: string | null) => void;
+}) {
   const speakerOrder = useMemo(
     () => Array.from(new Set(segments.map((s) => s.speaker))),
     [segments],
   );
-  const [speakerFilter, setSpeakerFilter] = useState<string | null>(null);
+  const [speakerFilter, setSpeakerFilterState] = useState<string | null>(null);
+  const setSpeakerFilter = (speaker: string | null) => {
+    setSpeakerFilterState(speaker);
+    onSpeakerFilterChange?.(speaker);
+  };
 
   if (!segments || segments.length === 0) {
     return (

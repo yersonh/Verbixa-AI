@@ -1,11 +1,20 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { Document, Packer, Paragraph, TextRun, HeadingLevel } from "docx";
+import {
+  Document,
+  Packer,
+  Paragraph,
+  TextRun,
+  HeadingLevel,
+  AlignmentType,
+} from "docx";
 
 import { prisma } from "@/lib/prisma";
 import {
   groupConsecutiveSegments,
   formatTimestamp,
+  filterSegmentsBySpeaker,
+  joinSegmentsText,
   type DiarizedSegment,
 } from "@/lib/transcript-format";
 
@@ -31,8 +40,12 @@ function buildTranscriptDocx(meeting: {
   title: string;
   scheduledAt: Date;
   segments: DiarizedSegment[];
+  showTimestamps: boolean;
+  speaker: string | null;
 }): Document {
-  const groups = groupConsecutiveSegments(meeting.segments);
+  const groups = groupConsecutiveSegments(
+    filterSegmentsBySpeaker(meeting.segments, meeting.speaker),
+  );
 
   const children: Paragraph[] = [
     new Paragraph({
@@ -47,10 +60,25 @@ function buildTranscriptDocx(meeting: {
     }),
     new Paragraph({
       heading: HeadingLevel.HEADING_1,
-      spacing: { after: 200 },
+      spacing: { after: meeting.speaker ? 80 : 200 },
       children: [new TextRun("Transcripción")],
     }),
   ];
+
+  if (meeting.speaker) {
+    children.push(
+      new Paragraph({
+        spacing: { after: 200 },
+        children: [
+          new TextRun({
+            text: `Filtrado por: ${meeting.speaker}`,
+            italics: true,
+            color: "666666",
+          }),
+        ],
+      }),
+    );
+  }
 
   if (groups.length === 0) {
     children.push(
@@ -68,17 +96,27 @@ function buildTranscriptDocx(meeting: {
       }),
     );
 
-    for (const segment of group.segments) {
+    if (meeting.showTimestamps) {
+      for (const segment of group.segments) {
+        children.push(
+          new Paragraph({
+            spacing: { after: 60 },
+            children: [
+              new TextRun({
+                text: `[${formatTimestamp(segment.startTime)}]  `,
+                color: "888888",
+              }),
+              new TextRun(segment.text),
+            ],
+          }),
+        );
+      }
+    } else {
       children.push(
         new Paragraph({
           spacing: { after: 60 },
-          children: [
-            new TextRun({
-              text: `[${formatTimestamp(segment.startTime)}]  `,
-              color: "888888",
-            }),
-            new TextRun(segment.text),
-          ],
+          alignment: AlignmentType.JUSTIFIED,
+          children: [new TextRun(joinSegmentsText(group.segments))],
         }),
       );
     }
@@ -90,10 +128,13 @@ function buildTranscriptDocx(meeting: {
 }
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
+  const url = new URL(req.url);
+  const showTimestamps = url.searchParams.get("timestamps") !== "false";
+  const speaker = url.searchParams.get("speaker") || null;
   const { userId, orgId } = await auth();
 
   if (!userId || !orgId) {
@@ -137,10 +178,14 @@ export async function GET(
     title: meeting.title,
     scheduledAt: meeting.scheduledAt,
     segments: meeting.transcript.segments as unknown as DiarizedSegment[],
+    showTimestamps,
+    speaker,
   });
 
   const buffer = await Packer.toBuffer(doc);
-  const filename = `transcripcion-${slugify(meeting.title || meeting.id)}.docx`;
+  const filenameParts = ["transcripcion", slugify(meeting.title || meeting.id)];
+  if (speaker) filenameParts.push(slugify(speaker));
+  const filename = `${filenameParts.join("-")}.docx`;
 
   return new Response(new Uint8Array(buffer), {
     headers: {
