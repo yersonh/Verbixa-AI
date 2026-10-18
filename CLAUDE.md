@@ -53,6 +53,10 @@ Each queue module (`transcription.ts`, `summary.ts`) lazily constructs its BullM
 - `middleware.ts` gates all `/dashboard(.*)` routes behind `auth.protect()` and requires an active `orgId`; users without one are redirected to `/onboarding`. `/onboarding(.*)` itself only requires authentication.
 - API routes that mutate data resolve the Prisma `Organization`/`User` by `clerkOrgId`/`clerkUserId` from `auth()` — see `app/api/meetings/route.ts` for the pattern (404/409 if Clerk data hasn't synced yet via webhook).
 
+### Acceso controlado por la Consola SGP (`lib/acceso.ts`, `lib/consola.ts`)
+
+Con `CONSOLA_URL` y `CONSOLA_SECRETO` configurados, solo las cuentas de Gmail autorizadas en la Consola SGP (repo hermano `SGP-consola`, sección Verbixa) pueden **crear** una organización: `app/onboarding` la crea desde el servidor (`actions.ts`, Clerk Backend API con `createdBy`) y guarda el creador en `Organization.ownerEmail`. Los miembros invitados entran sin estar en la lista. `middleware.ts` (runtime **nodejs**, usa Prisma) bloquea el panel (→ `/acceso-suspendido`) y la API (403, salvo `/api/webhooks`) de las organizaciones cuyo dueño la consola tiene suspendido o no autoriza, o que no tienen dueño. Respuestas de la consola en caché 2 min; si no responde se usa la última conocida y, si nunca la hubo, se deja pasar (crear organización, en cambio, se niega). Sin esas variables todo funciona como antes.
+
 ### Data model (`prisma/schema.prisma`)
 
 `Organization` → `User`/`Meeting` → `Transcript` (1:1) and `Summary` (1:1) → `Task` (1:many). `Meeting.status` (`MeetingStatus` enum: `SCHEDULED → JOINING → RECORDING → PROCESSING → COMPLETED`, or `FAILED`) is the single source of truth for pipeline progress and drives UI state (`components/dashboard/meeting-status-badge.tsx`, `meeting-processing-state.tsx`).

@@ -15,6 +15,9 @@ model Organization {
   id         String   @id @default(uuid())
   name       String
   clerkOrgId String   @unique
+  // Correo de la cuenta autorizada en la Consola SGP que creó la organización
+  // (lib/acceso.ts). Si la consola la suspende, se bloquea toda la organización.
+  ownerEmail String?
   createdAt  DateTime @default(now())
 
   users    User[]
