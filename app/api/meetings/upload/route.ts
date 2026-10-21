@@ -1,8 +1,9 @@
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
-import { auth } from "@clerk/nextjs/server";
+import { clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { MeetingSource, MeetingStatus } from "@prisma/client";
+import { accesoOrganizacion } from "@/lib/acceso";
 import { prisma } from "@/lib/prisma";
 import { addTranscriptionJob } from "@/lib/queues/transcription";
 
@@ -28,11 +29,25 @@ const ALLOWED_EXTENSIONS = new Set([
 const MAX_UPLOAD_SIZE_BYTES = 500 * 1024 * 1024;
 
 export async function POST(req: Request) {
-  const { userId, orgId } = await auth();
+  // Esta ruta está excluida del middleware (ver middleware.ts), así que no
+  // se puede usar `auth()`: se autentica la request directamente con Clerk
+  // y se repite aquí el control de acceso de la Consola SGP.
+  const client = await clerkClient();
+  const requestState = await client.authenticateRequest(req);
+  const { userId, orgId } = requestState.isAuthenticated
+    ? requestState.toAuth()
+    : { userId: null, orgId: null };
   if (!userId || !orgId) {
     return NextResponse.json(
       { error: "No autenticado o sin organización activa" },
       { status: 401 },
+    );
+  }
+
+  if ((await accesoOrganizacion(orgId)) === "bloqueada") {
+    return NextResponse.json(
+      { error: "El acceso de tu organización a Verbixa está suspendido" },
+      { status: 403 },
     );
   }
 

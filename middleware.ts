@@ -43,8 +43,14 @@ export default clerkMiddleware(async (auth, req) => {
 export const config = {
   // Node.js (no Edge): el control de acceso usa Prisma y node:crypto.
   runtime: "nodejs",
+  // /api/meetings/upload queda fuera: con el middleware en runtime nodejs,
+  // Next.js 15.5 clona el body de la request para el middleware y no espera
+  // a terminar de leerlo (`finalize()` sin await en next-server.js), así que
+  // en subidas que tardan unos segundos la ruta encuentra el body ya
+  // consumido ("Response body object should not be disturbed or locked").
+  // Esa ruta hace su propia autenticación y control de acceso.
   matcher: [
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    "/(api|trpc)(.*)",
+    "/((?!_next|api/meetings/upload|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/((?!api/meetings/upload)(?:api|trpc).*)",
   ],
 };
