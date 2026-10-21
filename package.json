@@ -8,6 +8,7 @@
     "start": "next start",
     "start:docker": "next start -H 0.0.0.0 -p ${PORT:-3000}",
     "lint": "eslint",
+    "test": "tsx --test lib/speaker-names.test.ts",
     "worker:transcription": "tsx watch workers/transcription-worker.ts",
     "worker:summary": "tsx watch workers/summary-worker.ts",
     "workers": "tsx watch workers/index.ts",

@@ -8,7 +8,10 @@ import {
 } from "../lib/queues/transcription";
 import { transcribeRecording, transcribeUploadedFile } from "../lib/deepgram";
 import { getSpeakerTimeline } from "../lib/recall";
-import { resolveSpeakerNames } from "../lib/speaker-names";
+import {
+  resolveSpeakerNames,
+  resolveSpeakerNamesFromIntroductions,
+} from "../lib/speaker-names";
 import { addSummaryJob } from "../lib/queues/summary";
 import { notifyMeetingFailed, notifyTranscriptReady } from "../lib/notifications";
 import { prisma } from "../lib/prisma";
@@ -59,7 +62,12 @@ async function processTranscriptionJob(
       })
     : [];
 
-  const segments = resolveSpeakerNames(rawSegments, timeline);
+  // Lo que siga como "Speaker N" (siempre en grabaciones subidas, que no
+  // tienen timeline) se intenta resolver con el nombre con el que la persona
+  // se presentó al inicio ("Hola, soy Ana...").
+  const segments = resolveSpeakerNamesFromIntroductions(
+    resolveSpeakerNames(rawSegments, timeline),
+  );
 
   await prisma.transcript.upsert({
     where: { meetingId: meeting.id },

@@ -28,7 +28,7 @@ npm run worker:summary         # run only the summary worker (tsx watch)
 npm run workers                # run both workers in one process (dev convenience)
 ```
 
-There is no test suite configured in this repo.
+`npm test` runs the unit tests (`node:test` via `tsx`) — currently only `lib/speaker-names.test.ts`.
 
 Local dev requires a running PostgreSQL and Redis instance (see `.env.example` for `DATABASE_URL` / `REDIS_URL`). Background jobs are processed by the worker processes above, not by the Next.js server — both `npm run dev` and a worker process need to be running for the full pipeline (transcription → summary) to complete.
 

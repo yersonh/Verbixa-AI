@@ -59,6 +59,11 @@ function initialsForSpeaker(speaker: string): string {
   if (match) {
     return `S${match[1]}`;
   }
+  // Nombre real ("Ana Ruiz" → "AR"; "Ana" → "AN").
+  const words = speaker.trim().split(/\s+/);
+  if (words.length > 1) {
+    return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+  }
   return speaker.slice(0, 2).toUpperCase();
 }
 
