@@ -24,6 +24,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   meetings: "Reuniones",
   new: "Agendar reunión",
   upload: "Subir grabación",
+  record: "Grabar reunión",
   transcripts: "Transcripciones",
   tasks: "Tareas",
   settings: "Configuración",

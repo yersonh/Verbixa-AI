@@ -16,6 +16,9 @@ const ALLOWED_EXTENSIONS = new Set([
   ".aac",
   ".ogg",
   ".flac",
+  // Audio WebM: lo usa la grabación en vivo desde el navegador para que el
+  // reproductor no lo trate como video (.webm sí se considera video).
+  ".weba",
   ".mp4",
   ".mov",
   ".webm",

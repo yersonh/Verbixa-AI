@@ -15,6 +15,8 @@ const CONTENT_TYPES: Record<string, string> = {
   ".aac": "audio/aac",
   ".ogg": "audio/ogg",
   ".flac": "audio/flac",
+  // Grabaciones hechas desde el navegador (record-meeting-form.tsx).
+  ".weba": "audio/webm",
   ".mp4": "video/mp4",
   ".mov": "video/quicktime",
   ".webm": "video/webm",

@@ -76,6 +76,13 @@ export default async function MeetingsPage({
           >
             + Subir grabación
           </Button>
+          <Button
+            variant="outline"
+            nativeButton={false}
+            render={<Link href="/dashboard/meetings/record" />}
+          >
+            + Grabar reunión
+          </Button>
           <Button nativeButton={false} render={<Link href="/dashboard/meetings/new" />}>
             + Agendar con bot
           </Button>
